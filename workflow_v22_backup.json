@@ -1,0 +1,53 @@
+{
+  "name": "YouTube Minerador v22",
+  "version": "22",
+  "status": "ESTAVEL",
+  "data": "2026-05-02",
+  "workflowId": "Nu0APJiMrWXX2789",
+  "n8nUrl": "https://n8n.agbotia.com.br/workflow/Nu0APJiMrWXX2789",
+  "endpoint": "POST https://n8n.agbotia.com.br/webhook/youtube-minerador",
+  "nos": [
+    {
+      "nome": "Webhook",
+      "tipo": "n8n-nodes-base.webhook",
+      "config": {
+        "httpMethod": "POST",
+        "path": "youtube-minerador",
+        "responseMode": "lastNode",
+        "allowedOrigins": "*"
+      }
+    },
+    {
+      "nome": "YouTube",
+      "tipo": "n8n-nodes-base.httpRequest",
+      "config": {
+        "method": "GET",
+        "url": "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=3&order=viewCount&type=video&q={nicho}&key=YOUTUBE_KEY",
+        "onError": "continue"
+      }
+    },
+    {
+      "nome": "Processar e Analisar",
+      "tipo": "n8n-nodes-base.code",
+      "config": {
+        "mode": "runOnceForAllItems",
+        "descricao": "Processa YouTube + chama Gemini via $helpers.httpRequest + retorna [{ json: { videos: [...] } }]"
+      }
+    }
+  ],
+  "retornoEsperado": {
+    "format": "{ videos: [{ titulo, canal, visualizacoes, oportunidade_produto, preco_sugerido, dor_principal, url_video }] }",
+    "nota": "json DEVE ser objeto, nunca array. Array fica dentro de { videos: [] }"
+  },
+  "regrasGravas": [
+    "json nunca pode ser array — use { json: { videos: [...] } }",
+    "lastNode retorna apenas .json do primeiro item",
+    "Usar $helpers.httpRequest() para HTTP dentro de Code nodes",
+    "indexOf/lastIndexOf para extrair JSON de texto Gemini (sem regex com backtick)",
+    "Sempre publish_workflow() apos update_workflow()"
+  ],
+  "chaves": {
+    "youtube": "AIzaSyDjd__9uO3qZwc-_hGyTlbYQKSMJTzs5fo",
+    "gemini": "AIzaSyDrrsBJB-gujJAPw85EpvcklPgWGfTMXE0 (VERIFICAR QUOTA)"
+  }
+}

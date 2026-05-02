@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube AI Minerador | Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #8b5cf6;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
+            padding: 2rem;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 3rem; }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle { color: var(--text-muted); font-size: 1.1rem; }
+
+        .search-box {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 24px;
+            display: flex;
+            gap: 1rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1rem 1.5rem;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus { border-color: var(--primary); }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 0 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+            white-space: nowrap;
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 15px 30px -5px var(--primary-glow); }
+        button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .error-log {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: #fca5a5;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .loading { display: none; text-align: center; margin: 2rem 0; }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .results { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+
+        .video-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .video-card:hover { transform: translateY(-4px); }
+        .video-header h2 { font-size: 1.4rem; margin-bottom: 0.5rem; color: #fff; }
+
+        .stats-badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .ai-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 1.5rem;
+            border-radius: 16px;
+        }
+
+        .analysis-item h4 { color: var(--primary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .analysis-item p { font-size: 1rem; line-height: 1.5; color: var(--text); }
+        .price-tag { color: var(--success) !important; font-weight: 700; }
+        .view-link { align-self: flex-end; color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+        .view-link:hover { color: white; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>YouTube AI Minerador</h1>
+            <p class="subtitle">Dashboard Inteligente v22 &mdash; Oportunidades Low Ticket</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="nichoInput" placeholder="Nicho (ex: diabetes, marmita, canva...)" onkeypress="if(event.key === 'Enter') minerar()">
+            <button id="minerarBtn" onclick="minerar()">MINERAR AGORA</button>
+        </div>
+
+        <div id="errorLog" class="error-log"></div>
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p id="loadingText">Buscando v&iacute;deos...</p>
+        </div>
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://n8n.agbotia.com.br/webhook/youtube-minerador';
+
+        async function minerar() {
+            const nicho = document.getElementById('nichoInput').value.trim();
+            if (!nicho) return alert('Digite um nicho.');
+
+            const btn = document.getElementById('minerarBtn');
+            const loading = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            const errorLog = document.getElementById('errorLog');
+            const loadingText = document.getElementById('loadingText');
+
+            btn.disabled = true;
+            loading.style.display = 'block';
+            errorLog.style.display = 'none';
+            resultsDiv.innerHTML = '';
+
+            const frases = ['Buscando v\u00eddeos no YouTube...', 'IA Analisando oportunidades...', 'Finalizando an\u00e1lise...'];
+            let fraseIdx = 0;
+            loadingText.innerText = frases[0];
+            const interval = setInterval(() => {
+                fraseIdx = (fraseIdx + 1) % frases.length;
+                loadingText.innerText = frases[fraseIdx];
+            }, 3000);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nicho: nicho })
+                });
+
+                const responseText = await response.text();
+                console.log('Resposta Bruta:', responseText);
+
+                if (!response.ok) throw new Error(`Servidor retornou erro ${response.status}: ${responseText.substring(0, 200)}`);
+                if (!responseText || responseText.trim() === '') throw new Error('Servidor retornou resposta vazia. Verifique os logs do n8n.');
+
+                let data;
+                try { data = JSON.parse(responseText); }
+                catch (e) { throw new Error(`Resposta n\u00e3o \u00e9 JSON v\u00e1lido. Recebido: ${responseText.substring(0, 300)}`); }
+
+                clearInterval(interval);
+                loading.style.display = 'none';
+                btn.disabled = false;
+
+                // v22: servidor retorna { videos: [...] }
+                let videos = [];
+                if (data && Array.isArray(data.videos)) {
+                    videos = data.videos;
+                } else if (Array.isArray(data)) {
+                    videos = data.length > 0 && Array.isArray(data[0]) ? data[0] : data;
+                } else if (data && typeof data === 'object') {
+                    videos = [data];
+                }
+
+                videos = videos.map(v => v && v.json ? v.json : v);
+
+                if (videos.length === 0 || !videos[0]) {
+                    resultsDiv.innerHTML = '<p style="text-align:center; color: var(--text-muted);">Nenhum resultado encontrado. Tente outro nicho.</p>';
+                    return;
+                }
+
+                renderResults(videos);
+
+            } catch (error) {
+                clearInterval(interval);
+                loading.style.display = 'none';
+                btn.disabled = false;
+                errorLog.style.display = 'block';
+                errorLog.innerText = `ERRO: ${error.message}`;
+            }
+        }
+
+        function formatarViews(n) {
+            if (!n || isNaN(n)) return '\u2014';
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+            return n.toString();
+        }
+
+        function renderResults(videos) {
+            const resultsDiv = document.getElementById('results');
+            videos.forEach(video => {
+                if (!video) return;
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="video-header">
+                        <span class="stats-badge">\uD83D\uDCFA ${formatarViews(video.visualizacoes)} Views</span>
+                        <h2>${video.titulo || 'V\u00eddeo Encontrado'}</h2>
+                        ${video.canal ? `<p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Canal: ${video.canal}</p>` : ''}
+                    </div>
+                    <div class="ai-analysis">
+                        <div class="analysis-item"><h4>\uD83D\uDC8E Produto Sugerido</h4><p>${video.oportunidade_produto || '\u2014'}</p></div>
+                        <div class="analysis-item"><h4>\uD83D\uDCB0 Pre\u00e7o Sugerido</h4><p class="price-tag">${video.preco_sugerido || '\u2014'}</p></div>
+                        <div class="analysis-item"><h4>\uD83D\uDEA8 Dor Principal</h4><p>${video.dor_principal || '\u2014'}</p></div>
+                    </div>
+                    <a href="${video.url_video || '#'}" target="_blank" class="view-link">Ver v\u00eddeo original \u2192</a>
+                `;
+                resultsDiv.appendChild(card);
+            });
+        }
+    </script>
+</body>
+
+</html>
